@@ -107,14 +107,16 @@ let directions = {
 }
 
 function walk(seq, isShow) {
-  let current = {x: start.x, y: start.y}
+  let current = {x: start.x, y: start.y, crashTime: 0}
   for(let i = 0, len = seq.length / 2; i < len; i++) {
+    if (isReach(current)) break
     let directKey = seq[i * 2] + seq[i * 2 + 1]
     let direct = directions[directKey]
     let old = {x: current.x, y: current.y}
     current.x += direct.x
     current.y += direct.y
     if (isCrash(current)) {
+      // current.crashTime++
       return old
     }
     if (!isShow) continue
@@ -126,6 +128,10 @@ function walk(seq, isShow) {
     })(current.x, current.y)
   }
   return current
+}
+
+function isReach(current) {
+  return current.x === target.x && current.y === target.y
 }
 
 function isCrash(current) {
@@ -165,7 +171,22 @@ makeRocks([
   {x: 7, y: 12}, 
   {x: 7, y: 11}, 
   {x: 7, y: 10}, 
-  {x: 7, y: 9}, 
+  // {x: 7, y: 9}, 
+  {x: 7, y: 8}, 
+
+  {x: 9, y: 13}, 
+
+  {x: 11, y: 13}, 
+  {x: 11, y: 12}, 
+  {x: 11, y: 11}, 
+  {x: 11, y: 10}, 
+  {x: 11, y: 9}, 
+
+  {x: 11, y: 7}, 
+  {x: 11, y: 6}, 
+  {x: 11, y: 5},
+  {x: 11, y: 4},
+  {x: 11, y: 3},
 ])
 
 let PACES_COUNT = Math.abs(target.x - start.x) + Math.abs(target.y - start.y)
@@ -179,7 +200,9 @@ let ga = new Gena({
   getFitness: function(gene) {
     let finalPos = walk(gene)
     let dist = Math.abs(finalPos.x - target.x) + Math.abs(finalPos.y - target.y)
-    return 1 - (dist / (size * 2))
+    let distRate = 1 - (dist / (size * 2))
+    let crashRate = Math.pow(0.9, finalPos.crashTime)
+    return distRate// * crashRate
   },
   done: function(results) {
     console.log("Get Result:", results)
